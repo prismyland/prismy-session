@@ -60,7 +60,7 @@
   "ava": {
     "compileEnhancements": false,
     "files": [
-      "src/**/index.spec.ts"
+      "src/**/*.spec.ts"
     ],
     "extensions": [
       "ts"

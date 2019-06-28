@@ -21,7 +21,6 @@ export default class MemoryStore implements InternalSessionStore {
     value: string,
     maxAgeInSeconds: number
   ): Promise<void> {
-    console.log('Session:', key, value)
     this.map.set(key, [value, this.getNow() + maxAgeInSeconds * 1000])
   }
 

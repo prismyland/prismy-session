@@ -109,7 +109,7 @@ export default function createSession(options: SessionOptions) {
     return sessionStore
   }
 
-  function touchCookie(context: Context) {
+  function setSidCookie(context: Context, sid: string) {
     const {
       name,
       secret,
@@ -121,7 +121,6 @@ export default function createSession(options: SessionOptions) {
       secure
     } = fortifiedOptions
     const cookieStore = getCookieStore(context)
-    const sid = getSid(context)
 
     cookieStore.set([
       name,
@@ -137,77 +136,36 @@ export default function createSession(options: SessionOptions) {
     ])
   }
 
-  function clearCookie(context: Context) {
-    const { name, domain, httpOnly, path, sameSite, secure } = fortifiedOptions
-    const cookieStore = getCookieStore(context)
-
-    cookieStore.set([
-      name,
-      '',
-      {
-        maxAge: 0,
-        domain,
-        httpOnly,
-        path,
-        sameSite,
-        secure
-      }
-    ])
-  }
-
-  function regenerateCookie(context: Context) {
-    const {
-      name,
-      secret,
-      maxAge,
-      domain,
-      httpOnly,
-      path,
-      sameSite,
-      secure
-    } = fortifiedOptions
-    const cookieStore = getCookieStore(context)
-
-    cookieStore.set([
-      name,
-      sign(generateUid(24), secret),
-      {
-        maxAge,
-        domain,
-        httpOnly,
-        path,
-        sameSite,
-        secure
-      }
-    ])
-  }
-
   async function finalize(context: Context) {
     const { result } = await getSessionStore(context)
-    const sid = getSid(context)
+    let sid = getSid(context)
     const { store, maxAge, serialize } = fortifiedOptions
 
     switch (result[0]) {
       case 'touch':
-        touchCookie(context)
+        setSidCookie(context, sid)
         const currentValue = getValue(context)
         if (currentValue != null) {
           await store.touch(sid, maxAge)
         }
         break
       case 'update':
-        touchCookie(context)
+        setSidCookie(context, sid)
         await store.set(sid, serialize(result[1]), maxAge)
         break
       case 'destroy':
-        clearCookie(context)
+        sid = generateUid(24)
+        setSidCookie(context, sid)
         await store.destroy(sid)
         break
       case 'regenerate':
-        regenerateCookie(context)
+        sid = generateUid(24)
+        setSidCookie(context, sid)
+        const promises = [store.destroy(sid)]
         if (result[1] != null) {
-          await store.set(sid, serialize(result[1]), maxAge)
+          promises.push(store.set(sid, serialize(result[1]), maxAge))
         }
+        await Promise.all(promises)
         break
     }
   }

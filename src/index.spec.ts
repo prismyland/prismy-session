@@ -70,12 +70,12 @@ test('middleware sets sid', async t => {
   })
 })
 
-test('session data will not be saved if it is null', async t => {})
+// test('session data will not be saved if it is null', async t => {})
 
-test('session#update sets data', async t => {})
+// test('session#update sets data', async t => {})
 
-test('session#destroy resets sid and discard data', async t => {})
+// test('session#destroy resets sid and discard data', async t => {})
 
-test('session#regenerate resets sid and destroy data of previous sid', async t => {})
+// test('session#regenerate resets sid and destroy data of previous sid', async t => {})
 
-test('session#regenerate sets data for new sid', async t => {})
+// test('session#regenerate sets data for new sid', async t => {})

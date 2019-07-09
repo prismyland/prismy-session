@@ -1,5 +1,5 @@
 import test from 'ava'
-import MemoryStore from './MemoryStore'
+import MemoryStore from '../MemoryStore'
 
 test('MemoryStore#get returns a stored value', async t => {
   const store = new MemoryStore()

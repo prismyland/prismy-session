@@ -7,7 +7,7 @@ import { sign, unsign } from 'cookie-signature'
 export { SessionStore }
 
 export interface InternalSessionStore {
-  get(key: string): Promise<string | undefined>
+  get(key: string): Promise<string | null>
   set(key: string, value: string, maxAgeInSeconds: number): Promise<void>
   destroy(key: string): Promise<void>
   touch(key: string, maxAgeInSeconds: number): Promise<void>

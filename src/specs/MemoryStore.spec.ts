@@ -22,7 +22,7 @@ test('MemoryStore#get does not return value if it is expired', async t => {
   store.mockNow(now + 1500)
 
   const value = await store.get('test')
-  t.is(value, undefined)
+  t.is(value, null)
 })
 
 test('MemoryStore#touch extends expiration date', async t => {
@@ -48,5 +48,5 @@ test('MemoryStore#destroy discard a stored value', async t => {
   await store.destroy('test')
 
   const value = await store.get('test')
-  t.is(value, undefined)
+  t.is(value, null)
 })

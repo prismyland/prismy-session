@@ -3,15 +3,15 @@ import { InternalSessionStore } from '.'
 export default class MemoryStore implements InternalSessionStore {
   map: Map<string, [string, number]> = new Map()
   private mockedNow?: number
-  async get(key: string): Promise<string | undefined> {
+  async get(key: string): Promise<string | null> {
     const tuple = this.map.get(key)
     if (tuple == null) {
-      return undefined
+      return null
     }
     const [value, expires] = tuple
     if (expires < this.getNow()) {
       this.map.delete(key)
-      return undefined
+      return null
     }
     return value
   }

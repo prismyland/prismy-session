@@ -6,7 +6,7 @@
     "prismy",
     "session"
   ],
-  "author": "Junyoung Choi <fluke8259@gmail.com>",
+  "author": "Junyoung Choi <rokt33r.choi@gmail.com>",
   "homepage": "https://github.com/prismyland/prismy-session",
   "license": "MIT",
   "main": "dist",

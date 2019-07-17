@@ -7,7 +7,7 @@
     "session"
   ],
   "author": "Junyoung Choi <fluke8259@gmail.com>",
-  "homepage": "https://github.com/BoostIO/prismy-cookie",
+  "homepage": "https://github.com/prismyland/prismy-session",
   "license": "MIT",
   "main": "dist",
   "files": [
@@ -16,7 +16,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BoostIO/prismy-cookie.git"
+    "url": "git+https://github.com/prismyland/prismy-session.git"
   },
   "scripts": {
     "build": "rimraf dist && tsc",
@@ -28,7 +28,7 @@
     "prepublishOnly": "npm run lint && npm test && npm run build"
   },
   "bugs": {
-    "url": "https://github.com/BoostIO/prismy-cookie/issues"
+    "url": "https://github.com/prismyland/prismy-session/issues"
   },
   "devDependencies": {
     "@types/cookie": "^0.3.3",

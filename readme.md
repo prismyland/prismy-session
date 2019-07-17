@@ -9,13 +9,14 @@ npm i prismy-session
 ```ts
 import { prismy, JsonBody, After } from 'prismy'
 import { createSessionMiddleware, Session } from 'prismy-session'
+import RedisSessionStore from 'prismy-session-redis'
 
 const sessionMiddleware = createSessionMiddleware({
+  store: new RedisSessionStore({
+    // Redis client options...
+  }),
   secret: 'yolo'
 })
-
-@After()
-class MyBaseHandler {}
 
 export class MyHandler {
   async execute(@Session session: SessionStore) {
@@ -24,5 +25,5 @@ export class MyHandler {
   }
 }
 
-export default prismy(MyHandler)
+export default prismy([sessionMiddleware, MyHandler])
 ```

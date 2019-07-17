@@ -10,6 +10,7 @@
   "homepage": "https://github.com/prismyland/prismy-session",
   "license": "MIT",
   "main": "dist",
+  "types": "dist",
   "files": [
     "dist/**/*",
     "!dist/specs/**/*"

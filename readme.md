@@ -28,4 +28,4 @@ export default prismy([sessionMiddleware, MyHandler])
 
 ## Session stores
 
-- [prismy-session-redis](https://github.com/prismyland/prismy-session-redis)
+- [`prismy-session-redis`](https://github.com/prismyland/prismy-session-redis)

@@ -9,12 +9,10 @@ npm i prismy-session
 ```ts
 import { prismy, JsonBody, After } from 'prismy'
 import { createSessionMiddleware, Session } from 'prismy-session'
-import RedisSessionStore from 'prismy-session-redis'
+import MemoryStore from 'prismy-session/MemoryStore'
 
 const sessionMiddleware = createSessionMiddleware({
-  store: new RedisSessionStore({
-    // Redis client options...
-  }),
+  store: new MemoryStore(),
   secret: 'yolo'
 })
 
@@ -27,3 +25,7 @@ export class MyHandler {
 
 export default prismy([sessionMiddleware, MyHandler])
 ```
+
+## Session stores
+
+- [prismy-session-redis](https://github.com/prismyland/prismy-session-redis)

@@ -3,7 +3,7 @@
 :ledger: Session for prismy
 
 ```
-npm i prismy prismy-cookie prismy-session
+npm i prismy-cookie prismy-session
 ```
 
 ## Example

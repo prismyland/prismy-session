@@ -56,3 +56,28 @@ test('Session calls strategy.finalize', async t => {
     t.true(spy.called)
   })
 })
+
+test('Session handles errors while executing strategy.finalize', async t => {
+  console.error = () => {}
+  const { Session, sessionMiddleware } = createSession({
+    strategy: {
+      async loadData() {
+        return {}
+      },
+      async finalize(context: Context, session: SessionState<any>) {
+        throw new Error('Hello, World!')
+      }
+    }
+  })
+  class Handler {
+    async handle(@Session() session: SessionState<any>) {
+      return session.data
+    }
+  }
+
+  await testServer([sessionMiddleware, Handler], async url => {
+    const response = await got.post(url, { throwHttpErrors: false })
+    t.is(response.statusCode, 500)
+    t.is(response.body, 'Internal Server Error')
+  })
+})

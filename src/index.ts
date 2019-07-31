@@ -1,4 +1,9 @@
-import { BaseHandler, Context, createInjectDecorators } from 'prismy'
+import {
+  BaseHandler,
+  Context,
+  createInjectDecorators,
+  handleError
+} from 'prismy'
 
 export interface SessionState<D = unknown> {
   readonly previousData: D | null
@@ -40,8 +45,13 @@ export function createSession<D = unknown>(options: SessionOptions<D>) {
 
         const originalResEnd: any = res.end
         res.end = async function(...args: any[]) {
-          await strategy.finalize(context, session)
-          originalResEnd.call(res, ...args)
+          try {
+            await strategy.finalize(context, session)
+            originalResEnd.call(res, ...args)
+          } catch (error) {
+            res.end = originalResEnd
+            handleError(context, error)
+          }
         }
       }
     },

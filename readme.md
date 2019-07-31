@@ -3,7 +3,7 @@
 :ledger: Session for prismy
 
 ```
-npm i prismy-cookie prismy-session
+npm i prismy-session
 ```
 
 ## Example
@@ -16,13 +16,14 @@ import {
   createInjectDecorators,
   createTextBodySelector
 } from 'prismy'
-import createSession, { SessionStore } from 'prismy-session'
-import MemoryStore from 'prismy-session/dist/MemoryStore'
+import createSession, { SessionState } from 'prismy-session'
 import querystring from 'querystring'
+import SignedCookieStrategy from 'prismy-session-strategy-signed-cookie'
 
 const { Session, sessionMiddleware } = createSession({
-  store: new MemoryStore(),
-  secret: 'secret'
+  strategy: new SignedCookieStrategy({
+    secret: 'RANDOM_HASH'
+  })
 })
 
 const UrlencodedBody = () =>
@@ -34,14 +35,16 @@ const UrlencodedBody = () =>
 class MyHandler extends BaseHandler {
   async handle(
     @Method() method: string,
-    @Session() session: SessionStore,
+    @Session() session: SessionState,
     @UrlencodedBody() body: any
   ) {
     if (method === 'POST') {
-      session.update({ message: body.message })
+      // Update session data
+      session.data = { message: body.message }
       return this.redirect('/')
     } else {
-      const data = session.get()
+      // Get session data
+      const { data } = session
       return [
         '<!DOCTYPE html>',
         '<body>',
@@ -59,6 +62,6 @@ class MyHandler extends BaseHandler {
 export default prismy([sessionMiddleware, MyHandler])
 ```
 
-## Session stores
+## Session strategies
 
-- [`prismy-session-redis`](https://github.com/prismyland/prismy-session-redis)
+- [prismy-seesion-strategy-signed-cookie](https://github.com/prismyland/prismy-session-strategy-signed-cookie)

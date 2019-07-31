@@ -1,81 +1,58 @@
 import test from 'ava'
-import createSession, { SessionStore } from '..'
-import MemoryStore from '../MemoryStore'
-import { Method } from 'prismy'
+import createSession, { SessionState } from '../'
+import { Context } from 'prismy'
 import { testServer } from 'prismy-test-server'
 import got from 'got'
-import { CookieJar } from 'tough-cookie'
 
-test('integration test', async t => {
-  const cookieJar = new CookieJar()
+class Spy {
+  called: boolean = false
+
+  call() {
+    this.called = true
+  }
+}
+
+test('Session sets data via strategy.loadData', async t => {
   const { Session, sessionMiddleware } = createSession({
-    store: new MemoryStore(),
-    secret: ''
+    strategy: {
+      async loadData() {
+        return { message: 'Hello, World!' }
+      },
+      async finalize(context: Context, session: SessionState<any>) {}
+    }
   })
   class Handler {
-    async handle(@Method() method: string, @Session() session: SessionStore) {
-      if (method === 'POST') {
-        session.update({ message: 'Hello, World!' })
-        return 'OK'
-      } else {
-        const data = session.get()
-        return data.message
-      }
+    async handle(@Session() session: SessionState<any>) {
+      return session.data
     }
   }
 
   await testServer([sessionMiddleware, Handler], async url => {
-    const postResponse = await got.post(url, {
-      cookieJar
-    })
-    t.is(postResponse.body, 'OK')
-
-    const getResponse = await got(url, {
-      cookieJar,
-      retry: 0
-    })
-    t.is(getResponse.body, 'Hello, World!')
+    const postResponse = await got.post(url, { json: true })
+    t.deepEqual(postResponse.body, { message: 'Hello, World!' })
   })
 })
 
-test('middleware sets sid', async t => {
-  const cookieJar = new CookieJar()
+test('Session calls strategy.finalize', async t => {
+  const spy = new Spy()
   const { Session, sessionMiddleware } = createSession({
-    store: new MemoryStore(),
-    secret: ''
+    strategy: {
+      async loadData() {
+        return {}
+      },
+      async finalize(context: Context, session: SessionState<any>) {
+        spy.call()
+      }
+    }
   })
   class Handler {
-    async handle(@Method() method: string, @Session() session: SessionStore) {
-      if (method === 'POST') {
-        session.update({ message: 'Hello, World!' })
-        return 'OK'
-      } else {
-        const data = session.get()
-        return data.message
-      }
+    async handle(@Session() session: SessionState<any>) {
+      return session.data
     }
   }
 
   await testServer([sessionMiddleware, Handler], async url => {
-    const postResponse = await got.post(url, {
-      cookieJar
-    })
-    t.is(postResponse.body, 'OK')
-
-    const getResponse = await got(url, {
-      cookieJar,
-      retry: 0
-    })
-    t.is(getResponse.body, 'Hello, World!')
+    await got.post(url)
+    t.true(spy.called)
   })
 })
-
-// test('session data will not be saved if it is null', async t => {})
-
-// test('session#update sets data', async t => {})
-
-// test('session#destroy resets sid and discard data', async t => {})
-
-// test('session#regenerate resets sid and destroy data of previous sid', async t => {})
-
-// test('session#regenerate sets data for new sid', async t => {})

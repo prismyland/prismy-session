@@ -11,23 +11,20 @@ export interface SessionState<D = unknown> {
   shouldRegenerate?: boolean
 }
 
-export interface Strategy<D = unknown> {
+export interface SessionStrategy<D = unknown> {
   loadData(context: Context): Promise<D | null> | D | null
   finalize(context: Context, session: SessionState): Promise<void> | void
 }
 
-interface SessionOptions<D = unknown> {
-  strategy: Strategy<D>
-}
-
-export function createSession<D = unknown>(options: SessionOptions<D>) {
-  const { strategy } = options
-  const sessionStoreSymbol = Symbol('prismy-session-store')
-  async function getSessionState(context: Context): Promise<SessionState<D>> {
-    let sessionState = context[sessionStoreSymbol] as SessionState<D> | null
+export function createSession<D = unknown>(strategy: SessionStrategy<D>) {
+  const sessionStateSymbol = Symbol('prismy-session-state')
+  async function sessionStateSelector(
+    context: Context
+  ): Promise<SessionState<D>> {
+    let sessionState = context[sessionStateSymbol] as SessionState<D> | null
     if (sessionState == null) {
       const data = await strategy.loadData(context)
-      sessionState = context[sessionStoreSymbol] = {
+      sessionState = context[sessionStateSymbol] = {
         data,
         previousData: data
       }
@@ -36,11 +33,11 @@ export function createSession<D = unknown>(options: SessionOptions<D>) {
   }
 
   return {
-    getSessionState,
+    sessionStateSelector,
     sessionMiddleware: class extends BaseHandler {
       async handle() {
         const context = this.context!
-        const session = await this.select(getSessionState)
+        const session = await this.select(sessionStateSelector)
         const res = context.res
 
         const originalResEnd: any = res.end
@@ -55,7 +52,7 @@ export function createSession<D = unknown>(options: SessionOptions<D>) {
         }
       }
     },
-    Session: () => createInjectDecorators(getSessionState)
+    Session: () => createInjectDecorators(sessionStateSelector)
   }
 }
 

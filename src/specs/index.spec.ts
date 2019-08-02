@@ -13,14 +13,13 @@ class Spy {
 }
 
 test('Session sets data via strategy.loadData', async t => {
-  const { Session, sessionMiddleware } = createSession({
-    strategy: {
-      async loadData() {
-        return { message: 'Hello, World!' }
-      },
-      async finalize(context: Context, session: SessionState<any>) {}
-    }
-  })
+  const strategy = {
+    async loadData() {
+      return { message: 'Hello, World!' }
+    },
+    async finalize(context: Context, session: SessionState<any>) {}
+  }
+  const { Session, sessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
@@ -35,16 +34,15 @@ test('Session sets data via strategy.loadData', async t => {
 
 test('Session calls strategy.finalize', async t => {
   const spy = new Spy()
-  const { Session, sessionMiddleware } = createSession({
-    strategy: {
-      async loadData() {
-        return {}
-      },
-      async finalize(context: Context, session: SessionState<any>) {
-        spy.call()
-      }
+  const strategy = {
+    async loadData() {
+      return {}
+    },
+    async finalize(context: Context, session: SessionState<any>) {
+      spy.call()
     }
-  })
+  }
+  const { Session, sessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
@@ -59,16 +57,15 @@ test('Session calls strategy.finalize', async t => {
 
 test('Session handles errors while executing strategy.finalize', async t => {
   console.error = () => {}
-  const { Session, sessionMiddleware } = createSession({
-    strategy: {
-      async loadData() {
-        return {}
-      },
-      async finalize(context: Context, session: SessionState<any>) {
-        throw new Error('Hello, World!')
-      }
+  const strategy = {
+    async loadData() {
+      return {}
+    },
+    async finalize(context: Context, session: SessionState<any>) {
+      throw new Error('Hello, World!')
     }
-  })
+  }
+  const { Session, sessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data

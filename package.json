@@ -12,17 +12,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/**/*",
-    "!dist/specs/**/*"
+    "dist/**/*"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/prismyland/prismy-session.git"
   },
   "scripts": {
-    "build": "rimraf dist && tsc",
-    "lint": "prettier --check src/**/*.ts examples/*/src/**/*.ts",
-    "format": "prettier --write src/**/*.ts examples/*/src/**/*.ts",
+    "build": "rimraf dist && tsc -P tsconfig.build.json",
+    "lint": "prettier --check src/**/*.ts specs/**/*.ts",
+    "format": "prettier --write src/**/*.ts specs/**/*.ts",
     "test": "ava --verbose",
     "test-ci": "nyc ava && nyc report --reporter=text-lcov > coverage.lcov",
     "codecov": "codecov",
@@ -51,7 +50,7 @@
   "ava": {
     "compileEnhancements": false,
     "files": [
-      "src/**/*.spec.ts"
+      "specs/**/*.spec.ts"
     ],
     "extensions": [
       "ts"

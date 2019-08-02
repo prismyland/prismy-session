@@ -1,5 +1,5 @@
 import test from 'ava'
-import createSession, { SessionState } from '../'
+import createSession, { SessionState } from '../src'
 import { Context } from 'prismy'
 import { testServer } from 'prismy-test-server'
 import got from 'got'

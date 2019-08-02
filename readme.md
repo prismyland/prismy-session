@@ -14,34 +14,21 @@ npm i prismy-session
 ## Example
 
 ```ts
-import {
-  prismy,
-  Method,
-  BaseHandler,
-  createInjectDecorators,
-  createTextBodySelector
-} from 'prismy'
+import { prismy, Method, BaseHandler, UrlEncodedBody } from 'prismy'
 import createSession, { SessionState } from 'prismy-session'
-import querystring from 'querystring'
 import SignedCookieStrategy from 'prismy-session-strategy-signed-cookie'
 
-const { Session, sessionMiddleware } = createSession({
-  strategy: new SignedCookieStrategy({
+const { Session, SessionMiddleware } = createSession(
+  new SignedCookieStrategy({
     secret: 'RANDOM_HASH'
   })
-})
-
-const UrlencodedBody = () =>
-  createInjectDecorators(async context => {
-    const textBody = await createTextBodySelector()(context)
-    return querystring.parse(textBody)
-  })
+)
 
 class MyHandler extends BaseHandler {
   async handle(
     @Method() method: string,
     @Session() session: SessionState,
-    @UrlencodedBody() body: any
+    @UrlEncodedBody() body: any
   ) {
     if (method === 'POST') {
       // Update session data
@@ -64,9 +51,10 @@ class MyHandler extends BaseHandler {
   }
 }
 
-export default prismy([sessionMiddleware, MyHandler])
+export default prismy([SessionMiddleware, MyHandler])
 ```
 
 ## Session strategies
 
 - [prismy-seesion-strategy-signed-cookie](https://github.com/prismyland/prismy-session-strategy-signed-cookie)
+- [prismy-seesion-strategy-jwt-cookie](https://github.com/prismyland/prismy-session-strategy-jwt-cookie)

@@ -34,7 +34,7 @@ export function createSession<D = unknown>(strategy: SessionStrategy<D>) {
 
   return {
     sessionStateSelector,
-    sessionMiddleware: class extends BaseHandler {
+    SessionMiddleware: class extends BaseHandler {
       async handle() {
         const context = this.context!
         const session = await this.select(sessionStateSelector)

@@ -19,14 +19,14 @@ test('Session sets data via strategy.loadData', async t => {
     },
     async finalize(context: Context, session: SessionState<any>) {}
   }
-  const { Session, sessionMiddleware } = createSession(strategy)
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     const postResponse = await got.post(url, { json: true })
     t.deepEqual(postResponse.body, { message: 'Hello, World!' })
   })
@@ -42,14 +42,14 @@ test('Session calls strategy.finalize', async t => {
       spy.call()
     }
   }
-  const { Session, sessionMiddleware } = createSession(strategy)
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     await got.post(url)
     t.true(spy.called)
   })
@@ -65,14 +65,14 @@ test('Session handles errors while executing strategy.finalize', async t => {
       throw new Error('Hello, World!')
     }
   }
-  const { Session, sessionMiddleware } = createSession(strategy)
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     const response = await got.post(url, { throwHttpErrors: false })
     t.is(response.statusCode, 500)
     t.is(response.body, 'Internal Server Error')

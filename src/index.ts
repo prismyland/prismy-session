@@ -1,11 +1,6 @@
-import {
-  BaseHandler,
-  Context,
-  createInjectDecorators,
-  handleError
-} from 'prismy'
+import { Context, ResponseObject, Middleware, Selector } from 'prismy'
 
-export interface SessionState<D = unknown> {
+export interface Session<D = unknown> {
   readonly previousData: D | null
   data: D | null
   shouldRegenerate?: boolean
@@ -13,18 +8,27 @@ export interface SessionState<D = unknown> {
 
 export interface SessionStrategy<D = unknown> {
   loadData(context: Context): Promise<D | null> | D | null
-  finalize(context: Context, session: SessionState): Promise<void> | void
+  finalize(
+    context: Context,
+    session: Session,
+    res: ResponseObject<any>
+  ): ResponseObject<any> | Promise<ResponseObject<any>>
 }
 
-export function createSession<D = unknown>(strategy: SessionStrategy<D>) {
-  const sessionStateSymbol = Symbol('prismy-session-state')
-  async function sessionStateSelector(
-    context: Context
-  ): Promise<SessionState<D>> {
-    let sessionState = context[sessionStateSymbol] as SessionState<D> | null
+export interface SessionUtils {
+  sessionSelector: Selector<Session>
+  sessionMiddleware: Middleware
+}
+
+export function createSession<D = unknown>(
+  strategy: SessionStrategy<D>
+): SessionUtils {
+  const sessionSymbol = Symbol('prismy-session')
+  async function sessionSelector(context: Context): Promise<Session<D>> {
+    let sessionState = context[sessionSymbol] as Session<D> | undefined
     if (sessionState == null) {
       const data = await strategy.loadData(context)
-      sessionState = context[sessionStateSymbol] = {
+      sessionState = context[sessionSymbol] = {
         data,
         previousData: data
       }
@@ -33,26 +37,12 @@ export function createSession<D = unknown>(strategy: SessionStrategy<D>) {
   }
 
   return {
-    sessionStateSelector,
-    SessionMiddleware: class extends BaseHandler {
-      async handle() {
-        const context = this.context!
-        const session = await this.select(sessionStateSelector)
-        const res = context.res
-
-        const originalResEnd: any = res.end
-        res.end = async function(...args: any[]) {
-          try {
-            await strategy.finalize(context, session)
-            originalResEnd.call(res, ...args)
-          } catch (error) {
-            res.end = originalResEnd
-            handleError(context, error)
-          }
-        }
-      }
-    },
-    Session: () => createInjectDecorators(sessionStateSelector)
+    sessionSelector,
+    sessionMiddleware: context => async next => {
+      const resObject = await next()
+      const session = await sessionSelector(context)
+      return strategy.finalize(context, session, resObject)
+    }
   }
 }
 

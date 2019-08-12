@@ -14,22 +14,21 @@ npm i prismy-session
 ## Example
 
 ```ts
-import { prismy, Method, BaseHandler, UrlEncodedBody } from 'prismy'
+import { prismy, methodSelector, createUrlEncodedBodySelector } from 'prismy'
 import createSession, { SessionState } from 'prismy-session'
 import SignedCookieStrategy from 'prismy-session-strategy-signed-cookie'
 
-const { Session, SessionMiddleware } = createSession(
+const { sessionSelector, sessionMiddleware } = createSession(
   new SignedCookieStrategy({
     secret: 'RANDOM_HASH'
   })
 )
 
-class MyHandler extends BaseHandler {
-  async handle(
-    @Method() method: string,
-    @Session() session: SessionState,
-    @UrlEncodedBody() body: any
-  ) {
+const urlEncodedBodySelector = createUrlEncodedBodySelector()
+
+export default prismy<[string, Session, any]>(
+  [methodSelector, sessionSelector, urlEncodedBodySelector],
+  (method, session, body) => {
     if (method === 'POST') {
       // Update session data
       session.data = { message: body.message }
@@ -48,10 +47,9 @@ class MyHandler extends BaseHandler {
         '</body>'
       ].join('')
     }
-  }
-}
-
-export default prismy([SessionMiddleware, MyHandler])
+  },
+  [sessionMiddleware]
+)
 ```
 
 ## Session strategies

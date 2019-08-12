@@ -14,38 +14,44 @@ npm i prismy-session
 ## Example
 
 ```ts
-import { prismy, methodSelector, createUrlEncodedBodySelector } from 'prismy'
-import createSession, { SessionState } from 'prismy-session'
-import SignedCookieStrategy from 'prismy-session-strategy-signed-cookie'
+import {
+  prismy,
+  methodSelector,
+  createUrlEncodedBodySelector,
+  redirect,
+  res
+} from 'prismy'
+import createSession from 'prismy-session'
+import JWTCookieStrategy from 'prismy-session-strategy-jwt-cookie'
 
 const { sessionSelector, sessionMiddleware } = createSession(
-  new SignedCookieStrategy({
+  new JWTCookieStrategy({
     secret: 'RANDOM_HASH'
   })
 )
 
 const urlEncodedBodySelector = createUrlEncodedBodySelector()
 
-export default prismy<[string, Session, any]>(
+export default prismy(
   [methodSelector, sessionSelector, urlEncodedBodySelector],
   (method, session, body) => {
     if (method === 'POST') {
-      // Update session data
       session.data = { message: body.message }
-      return this.redirect('/')
+      return redirect('/')
     } else {
-      // Get session data
       const { data } = session
-      return [
-        '<!DOCTYPE html>',
-        '<body>',
-        `<p>Message: ${data != null ? data.message : 'NULL'}</p>`,
-        '<form action="/" method="post">',
-        '<input name="message">',
-        '<button type="submit">Send</button>',
-        '</form>',
-        '</body>'
-      ].join('')
+      return res(
+        [
+          '<!DOCTYPE html>',
+          '<body>',
+          `<p>Message: ${data != null ? (data as any).message : 'NULL'}</p>`,
+          '<form action="/" method="post">',
+          '<input name="message">',
+          '<button type="submit">Send</button>',
+          '</form>',
+          '</body>'
+        ].join('')
+      )
     }
   },
   [sessionMiddleware]

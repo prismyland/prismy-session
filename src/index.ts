@@ -1,13 +1,13 @@
 import { Context, ResponseObject, Middleware, Selector } from 'prismy'
 
-export interface Session<D = unknown> {
+export interface Session<D = any> {
   readonly previousData: D | null
   data: D | null
   shouldRegenerate?: boolean
 }
 
-export interface SessionStrategy<D = unknown> {
-  loadData(context: Context): Promise<D | null> | D | null
+export interface SessionStrategy {
+  loadData(context: Context): Promise<any> | any | null
   finalize(
     context: Context,
     session: Session,
@@ -20,8 +20,8 @@ export interface SessionUtils {
   sessionMiddleware: Middleware
 }
 
-export function createSession<D = unknown>(
-  strategy: SessionStrategy<D>
+export function createSession<D = any>(
+  strategy: SessionStrategy
 ): SessionUtils {
   const sessionSymbol = Symbol('prismy-session')
   async function sessionSelector(context: Context): Promise<Session<D>> {

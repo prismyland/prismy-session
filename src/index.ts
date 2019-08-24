@@ -15,14 +15,14 @@ export interface SessionStrategy {
   ): ResponseObject<any> | Promise<ResponseObject<any>>
 }
 
-export interface SessionUtils {
-  sessionSelector: Selector<Session>
+export interface SessionUtils<D> {
+  sessionSelector: Selector<Session<D>>
   sessionMiddleware: Middleware
 }
 
 export function createSession<D = any>(
   strategy: SessionStrategy
-): SessionUtils {
+): SessionUtils<D> {
   const sessionSymbol = Symbol('prismy-session')
   async function sessionSelector(context: Context): Promise<Session<D>> {
     let sessionState = context[sessionSymbol] as Session<D> | undefined

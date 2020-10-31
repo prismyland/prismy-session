@@ -1,4 +1,4 @@
-import { Context, ResponseObject, Middleware, Selector } from 'prismy'
+import { Context, ResponseObject, Selector, PrismyPureMiddleware } from 'prismy'
 
 export interface Session<D = any> {
   readonly previousData: D | null
@@ -17,7 +17,7 @@ export interface SessionStrategy {
 
 export interface SessionUtils<D> {
   sessionSelector: Selector<Session<D>>
-  sessionMiddleware: Middleware
+  sessionMiddleware: PrismyPureMiddleware
 }
 
 export function createSession<D = any>(

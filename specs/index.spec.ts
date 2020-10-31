@@ -41,7 +41,10 @@ test('sessionSelector selects SessionStrategy#loadData', async t => {
   )
 
   await testHandler(handler, async url => {
-    const postResponse = await got.post(url, { json: true })
+    const postResponse = await got(url, {
+      method: 'POST',
+      responseType: 'json'
+    })
     t.deepEqual(postResponse.body, { message: 'Hello, World!' })
   })
 })
@@ -71,7 +74,7 @@ test('sessionMiddleware uses SessionStrategy#finalize to finalize response', asy
   )
 
   await testHandler(handler, async url => {
-    await got.post(url)
+    await got(url, { method: 'POST' })
     t.true(spy.called)
   })
 })
@@ -97,7 +100,7 @@ test('prismy handles errors from SessionStrategy#finalize', async t => {
   )
 
   await testHandler(handler, async url => {
-    const response = await got.post(url, { throwHttpErrors: false })
+    const response = await got(url, { throwHttpErrors: false, method: 'POST' })
     t.is(response.statusCode, 500)
     t.is(response.body, 'Internal Server Error')
   })

@@ -30,7 +30,7 @@ export function createSession<D = any>(
       const data = await strategy.loadData(context)
       sessionState = context[sessionSymbol] = {
         data,
-        previousData: data
+        previousData: data,
       }
     }
     return sessionState
@@ -38,11 +38,11 @@ export function createSession<D = any>(
 
   return {
     sessionSelector,
-    sessionMiddleware: context => async next => {
+    sessionMiddleware: (context) => async (next) => {
       const resObject = await next()
       const session = await sessionSelector(context)
       return strategy.finalize(context, session, resObject)
-    }
+    },
   }
 }
 

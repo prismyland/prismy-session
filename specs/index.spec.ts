@@ -5,7 +5,7 @@ import {
   ResponseObject,
   prismy,
   res,
-  createWithErrorHandler
+  createWithErrorHandler,
 } from 'prismy'
 import { testHandler } from 'prismy-test'
 import createSession, { Session } from '../src'
@@ -18,7 +18,7 @@ class Spy {
   }
 }
 
-test('sessionSelector selects SessionStrategy#loadData', async t => {
+test('sessionSelector selects SessionStrategy#loadData', async (t) => {
   const strategy = {
     async loadData() {
       return { message: 'Hello, World!' }
@@ -29,24 +29,27 @@ test('sessionSelector selects SessionStrategy#loadData', async t => {
       resObject: ResponseObject<any>
     ) {
       return resObject
-    }
+    },
   }
   const { sessionSelector, sessionMiddleware } = createSession(strategy)
   const handler = prismy(
     [sessionSelector],
-    session => {
+    (session) => {
       return res(session.data)
     },
     [sessionMiddleware]
   )
 
-  await testHandler(handler, async url => {
-    const postResponse = await got.post(url, { json: true })
+  await testHandler(handler, async (url) => {
+    const postResponse = await got(url, {
+      method: 'POST',
+      responseType: 'json',
+    })
     t.deepEqual(postResponse.body, { message: 'Hello, World!' })
   })
 })
 
-test('sessionMiddleware uses SessionStrategy#finalize to finalize response', async t => {
+test('sessionMiddleware uses SessionStrategy#finalize to finalize response', async (t) => {
   const spy = new Spy()
   const strategy = {
     async loadData() {
@@ -59,24 +62,24 @@ test('sessionMiddleware uses SessionStrategy#finalize to finalize response', asy
     ) {
       spy.call()
       return resObject
-    }
+    },
   }
   const { sessionSelector, sessionMiddleware } = createSession(strategy)
   const handler = prismy(
     [sessionSelector],
-    session => {
+    (session) => {
       return res(session.data)
     },
     [sessionMiddleware]
   )
 
-  await testHandler(handler, async url => {
-    await got.post(url)
+  await testHandler(handler, async (url) => {
+    await got(url, { method: 'POST' })
     t.true(spy.called)
   })
 })
 
-test('prismy handles errors from SessionStrategy#finalize', async t => {
+test('prismy handles errors from SessionStrategy#finalize', async (t) => {
   const withErrorHandler = createWithErrorHandler()
 
   const strategy = {
@@ -85,19 +88,19 @@ test('prismy handles errors from SessionStrategy#finalize', async t => {
     },
     async finalize() {
       throw new Error('Hello, World!')
-    }
+    },
   }
   const { sessionSelector, sessionMiddleware } = createSession(strategy)
   const handler = prismy(
     [sessionSelector],
-    session => {
+    (session) => {
       return res(session.data)
     },
     [sessionMiddleware, withErrorHandler]
   )
 
-  await testHandler(handler, async url => {
-    const response = await got.post(url, { throwHttpErrors: false })
+  await testHandler(handler, async (url) => {
+    const response = await got(url, { throwHttpErrors: false, method: 'POST' })
     t.is(response.statusCode, 500)
     t.is(response.body, 'Internal Server Error')
   })

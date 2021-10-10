@@ -1,12 +1,6 @@
 import test from 'ava'
 import got from 'got'
-import {
-  Context,
-  ResponseObject,
-  prismy,
-  res,
-  createWithErrorHandler,
-} from 'prismy'
+import { Context, ResponseObject, prismy, res } from 'prismy'
 import { testHandler } from 'prismy-test'
 import createSession, { Session } from '../src'
 
@@ -80,8 +74,6 @@ test('sessionMiddleware uses SessionStrategy#finalize to finalize response', asy
 })
 
 test('prismy handles errors from SessionStrategy#finalize', async (t) => {
-  const withErrorHandler = createWithErrorHandler()
-
   const strategy = {
     async loadData() {
       return {}
@@ -96,12 +88,12 @@ test('prismy handles errors from SessionStrategy#finalize', async (t) => {
     (session) => {
       return res(session.data)
     },
-    [sessionMiddleware, withErrorHandler]
+    [sessionMiddleware]
   )
 
   await testHandler(handler, async (url) => {
     const response = await got(url, { throwHttpErrors: false, method: 'POST' })
     t.is(response.statusCode, 500)
-    t.is(response.body, 'Internal Server Error')
+    t.regex(response.body, /^Error: Hello, World!/)
   })
 })

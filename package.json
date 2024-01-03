@@ -1,6 +1,6 @@
 {
   "name": "prismy-session",
-  "version": "3.0.0-1",
+  "version": "3.0.0",
   "description": ":ledger: Session for prismy",
   "keywords": [
     "prismy",

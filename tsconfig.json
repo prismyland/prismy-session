@@ -22,8 +22,6 @@
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "noFallthroughCasesInSwitch": true,
-
-    "suppressImplicitAnyIndexErrors": true
+    "noFallthroughCasesInSwitch": true
   }
 }

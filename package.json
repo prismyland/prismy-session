@@ -33,20 +33,22 @@
     "url": "https://github.com/prismyland/prismy-session/issues"
   },
   "devDependencies": {
+    "@types/cookie": "^0.6.0",
+    "@types/cookie-signature": "^1.1.2",
     "@types/node": "^14.14.6",
+    "@types/uid-safe": "^2.1.5",
     "ava": "^3.13.0",
     "codecov": "^3.8.1",
     "got": "^11.8.0",
     "nyc": "^15.1.0",
     "prettier": "^2.1.2",
-    "prismy": "^3.0.0-5",
-    "prismy-test": "^3.0.0-0",
+    "prismy": "^4.0.0-0",
     "rimraf": "^3.0.2",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.5"
   },
   "peerDependencies": {
-    "prismy": ">= 3 < 4 || >= 3.0.0-7"
+    "prismy": ">= 4 < 5 || >= 4.0.0-0"
   },
   "ava": {
     "files": [
@@ -64,5 +66,8 @@
       ".ts"
     ]
   },
-  "dependencies": {}
+  "dependencies": {
+    "cookie-signature": "^1.2.1",
+    "uid-safe": "^2.1.5"
+  }
 }

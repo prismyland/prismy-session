@@ -28,22 +28,24 @@ export class RedisPrismySessionStore extends PrismySessionStore {
   }
 
   async set(id: string, data: any, expires: Date) {
-    let ttl = Math.ceil((expires.getTime() - Date.now()) / 1000)
-    if (!(ttl > 0)) {
-      ttl = 1
-    }
+    const ttl = calculateTtl(expires)
     await this.setter(id, data, ttl)
   }
 
   async touch(id: string, expires: Date) {
-    let ttl = Math.ceil((expires.getTime() - Date.now()) / 1000)
-    if (!(ttl > 0)) {
-      ttl = 1
-    }
+    const ttl = calculateTtl(expires)
     await this.client.expire(id, ttl)
   }
 
   async destroy(id: string) {
     await this.client.del([id])
   }
+}
+
+function calculateTtl(expires: Date) {
+  const ttl = Math.ceil((expires.getTime() - Date.now()) / 1000)
+  if (!(ttl > 0)) {
+    return 1
+  }
+  return ttl
 }

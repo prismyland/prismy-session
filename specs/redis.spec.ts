@@ -2,16 +2,16 @@ import { RedisPrismySessionStore } from '../src/redis'
 import { createClient } from 'redis'
 import IORedis from 'ioredis'
 
-// Initialize client.
-const redisClient = createClient()
-const ioRedisClient = new IORedis()
-
-beforeAll(async () => {
-  await redisClient.connect()
-})
-
 describe('MemoryPrismySessionStore (Redis)', () => {
-  const client = redisClient
+  const client = createClient()
+
+  beforeAll(async () => {
+    await client.connect()
+  })
+
+  afterAll(async () => {
+    await client.disconnect()
+  })
   it('sets and gets', async () => {
     const store = new RedisPrismySessionStore(client)
     await store.set('test', 'hello', new Date(Date.now() + 24 * 60 * 60 * 1000))
@@ -53,7 +53,11 @@ describe('MemoryPrismySessionStore (Redis)', () => {
 })
 
 describe('MemoryPrismySessionStore (IORedis)', () => {
-  const client = ioRedisClient
+  const client = new IORedis()
+  afterAll(() => {
+    client.disconnect()
+  })
+
   it('sets and gets', async () => {
     const store = new RedisPrismySessionStore(client)
     await store.set('test', 'hello', new Date(Date.now() + 24 * 60 * 60 * 1000))

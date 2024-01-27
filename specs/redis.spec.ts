@@ -1,6 +1,7 @@
 import { RedisPrismySessionStore } from '../src/redis'
 import { createClient } from 'redis'
 import IORedis from 'ioredis'
+import { wait } from './helpers'
 
 describe('RedisPrismySessionStore (Redis)', () => {
   const client = createClient()
@@ -10,7 +11,7 @@ describe('RedisPrismySessionStore (Redis)', () => {
   })
 
   afterAll(async () => {
-    await client.disconnect()
+    await client.quit()
   })
   it('sets and gets', async () => {
     const store = new RedisPrismySessionStore(client)
@@ -19,15 +20,11 @@ describe('RedisPrismySessionStore (Redis)', () => {
     expect(await store.get('test')).toBe('hello')
   })
 
-  it.skip('does not get if expired', async () => {
+  it('does not get if expired', async () => {
     const store = new RedisPrismySessionStore(client)
     await store.set('test', 'hello', new Date(Date.now() - 24 * 60 * 60 * 1000))
 
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve()
-      }, 1500)
-    })
+    await wait(1)
     expect(await store.get('test')).toBeNull()
   })
 
@@ -54,8 +51,8 @@ describe('RedisPrismySessionStore (Redis)', () => {
 
 describe('RedisPrismySessionStore (IORedis)', () => {
   const client = new IORedis()
-  afterAll(() => {
-    client.disconnect()
+  afterAll(async () => {
+    await client.quit()
   })
 
   it('sets and gets', async () => {
@@ -65,15 +62,11 @@ describe('RedisPrismySessionStore (IORedis)', () => {
     expect(await store.get('test')).toBe('hello')
   })
 
-  it.skip('does not get if expired', async () => {
+  it('does not get if expired', async () => {
     const store = new RedisPrismySessionStore(client)
     await store.set('test', 'hello', new Date(Date.now() - 24 * 60 * 60 * 1000))
 
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve()
-      }, 1500)
-    })
+    await wait(1)
     expect(await store.get('test')).toBeNull()
   })
 

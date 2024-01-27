@@ -43,14 +43,9 @@ export class KnexPrismySessionStore extends PrismySessionStore {
 
     if (!exists) {
       if (this.createTable) {
-        const supportingJson = await isDbSupportJson(this.knex)
         await this.knex.schema.createTable(this.tableName, (table) => {
           table.string(sidCol).primary()
-          if (supportingJson) {
-            table.json(dataCol).notNullable()
-          } else {
-            table.text(dataCol).notNullable()
-          }
+          table.text(dataCol).notNullable()
           if (isMySQL(this.knex) || isMSSQL(this.knex)) {
             table.dateTime(expiredCol).notNullable().index()
           } else {
@@ -91,7 +86,8 @@ export class KnexPrismySessionStore extends PrismySessionStore {
       ).unref()
     }
   }
-  async stopDbCleanup() {
+
+  stopDbCleanup() {
     if (this.nextDbCleanup != null) {
       clearTimeout(this.nextDbCleanup)
       this.nextDbCleanup = null
@@ -106,12 +102,12 @@ export class KnexPrismySessionStore extends PrismySessionStore {
       .from(this.tableName)
       .where(sidCol, '=', id)
       .andWhereRaw(condition, dateAsISO(this.knex))
-    const data = result[0][dataCol]
-    console.log(result[0][dataCol])
-    if (typeof data === 'string') {
-      return JSON.parse(data)
+    if (result[0] == null) {
+      return null
     }
-    return data
+    const data = result[0][dataCol]
+
+    return JSON.parse(data)
   }
 
   async set(id: string, data: any, expires: Date) {
@@ -195,20 +191,6 @@ function fallback<V>(value: V | undefined | null, defaultValue: V): V {
   return value
 }
 
-async function isDbSupportJson(knex: Knex) {
-  if (isMSSQL(knex)) return false
-  if (!isMySQL(knex)) return true
-  const data = await knex.raw('select version() as version')
-  const { version } = data[0][0]
-  const extractedVersions: string[] = version.split('.')
-  // Only mysql version > 5.7.8 supports JSON datatype
-  return (
-    +extractedVersions[0] > 5 ||
-    (extractedVersions[0] === '5' &&
-      (+extractedVersions[1] > 7 ||
-        (extractedVersions[1] === '7' && +extractedVersions[2] >= 8)))
-  )
-}
 /*
  * Returns true if the specified knex instance is using sqlite3.
  * @return {bool}

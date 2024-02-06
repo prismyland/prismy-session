@@ -1,0 +1,14 @@
+services:
+  redis:
+    image: 'redislabs/redismod'
+    ports:
+      - '6379:6379'
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: prismy-session
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - 5432:5432

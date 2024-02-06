@@ -1,6 +1,5 @@
 import knex from 'knex'
 import { KnexPrismySessionStore } from '../src/knex'
-import { wait } from './helpers'
 
 const db = knex({
   client: 'pg',
@@ -21,10 +20,16 @@ describe('KnexPrismySessionStore (Postgresql)', () => {
     dbCleanupErrorHandler: (error) => {
       console.error(error, 'fail to clean')
     },
+    disableDbCleanup: true,
   })
 
   beforeAll(async () => {
     await store.prepare()
+  })
+
+  afterAll(async () => {
+    store.stopDbCleanup()
+    await store.knex.destroy()
   })
 
   it('sets and gets', async () => {
@@ -82,7 +87,7 @@ describe('KnexPrismySessionStore (Postgresql)', () => {
       .where('sid', '=', 'test3')
     expect(result.length).not.toBe(0)
 
-    await wait(200)
+    await store.cleanupDb()
 
     const result2 = await db
       .select('*')

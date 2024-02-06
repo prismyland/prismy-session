@@ -59,13 +59,28 @@ export class KnexPrismySessionStore extends PrismySessionStore {
       }
     }
 
-    if (!this.disableDbCleanup) {
-      this.startDbCleanup()
+    this.queueDbCleanup()
+  }
+
+  async queueDbCleanup() {
+    if (this.disableDbCleanup) {
+      return
+    }
+    try {
+      await this.cleanupDb()
+    } catch (error) {
+      this.dbCleanupErrorHandler(error)
+    } finally {
+      this.nextDbCleanup = setTimeout(
+        () => this.queueDbCleanup(),
+        this.clearInterval
+      ).unref()
     }
   }
 
-  async startDbCleanup() {
+  async cleanupDb() {
     await this.preparing
+
     let condition = `${expiredCol} < CAST(? as ${timestampTypeName(this.knex)})`
     if (isSqlite3(this.knex)) {
       // sqlite3 date condition is a special case.
@@ -73,18 +88,9 @@ export class KnexPrismySessionStore extends PrismySessionStore {
     } else if (isOracle(this.knex)) {
       condition = `${expiredCol} < CAST(? as ${timestampTypeName(this.knex)})`
     }
-    try {
-      await this.knex(this.tableName)
-        .del()
-        .whereRaw(condition, dateAsISO(this.knex))
-    } catch (error) {
-      this.dbCleanupErrorHandler(error)
-    } finally {
-      this.nextDbCleanup = setTimeout(
-        () => this.startDbCleanup(),
-        this.clearInterval
-      ).unref()
-    }
+    await this.knex(this.tableName)
+      .del()
+      .whereRaw(condition, dateAsISO(this.knex))
   }
 
   stopDbCleanup() {

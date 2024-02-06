@@ -1,5 +1,3 @@
-import { wait } from './helpers'
-
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Client } from 'pg'
 import { DrizzlePrismySessionStore } from '../src/drizzle'
@@ -17,10 +15,10 @@ const db = drizzle(pgClient)
 describe('DrizzlePrismySessionStore (Postgresql)', () => {
   const store = new DrizzlePrismySessionStore({
     db: db,
-    clearInterval: 100,
     dbCleanupErrorHandler: (error) => {
       console.error(error, 'fail to clean')
     },
+    disableDbCleanup: true,
   })
 
   beforeAll(async () => {
@@ -83,7 +81,7 @@ describe('DrizzlePrismySessionStore (Postgresql)', () => {
       .where(eq(store.table.sid, 'test3'))
     expect(result.length).not.toBe(0)
 
-    await wait(200)
+    await store.cleanupDb()
 
     const result2 = await db
       .select()

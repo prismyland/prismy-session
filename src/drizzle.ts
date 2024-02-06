@@ -42,20 +42,27 @@ export class DrizzlePrismySessionStore extends PrismySessionStore {
       options.dbCleanupErrorHandler,
       console.error
     )
-    this.startDbCleanup()
+    this.queueDbCleanup()
   }
 
-  async startDbCleanup() {
+  async queueDbCleanup() {
+    if (this.disableDbCleanup) {
+      return
+    }
     try {
-      await this.db.delete(this.table).where(lt(this.table.expired, new Date()))
+      await this.cleanupDb()
     } catch (error) {
       this.dbCleanupErrorHandler(error)
     } finally {
       this.nextDbCleanup = setTimeout(
-        () => this.startDbCleanup(),
+        () => this.queueDbCleanup(),
         this.clearInterval
       ).unref()
     }
+  }
+
+  async cleanupDb() {
+    await this.db.delete(this.table).where(lt(this.table.expired, new Date()))
   }
 
   stopDbCleanup() {
